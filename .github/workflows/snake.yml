@@ -1,0 +1,38 @@
+name: Snake
+
+on:
+  schedule:
+    - cron: "0 3 1 * *"
+  workflow_dispatch:
+
+jobs:
+  generate:
+    name: Generate
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Snake
+        uses: Platane/snk/svg-only@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            assets/contribution-grid-snake.svg
+            assets/contribution-grid-snake-dark.svg?palette=github-dark
+
+      - name: Publish Snake
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@noreply.github.com"
+          git add assets/contribution-grid-snake.svg assets/contribution-grid-snake-dark.svg
+          git commit -m "chore: update contribution grid snake" || exit 0
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
